@@ -30,3 +30,4 @@ ETA calculator/display for CityInc.se idle incremental game
 * Doesn't play the game for you (yet)
 * Doesn't take cycles into account - values will be way off for long bank cycles!!
 * Doesn't automatically scrub any info - press [Grab info] to refresh goals and stuff!
+* Test button does nothing except look pretty
