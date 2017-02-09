@@ -1,6 +1,5 @@
 // ETA Script for http://cityinc.se
-// https://github.com/zedor/CityInc-ETA/
-// Release version 2
+// pre-release version
 // Script by selenagomez
 // Game by kvadd
 //
@@ -158,39 +157,6 @@ var upgradeLimit; // can show max 10 upgrades
 var cityLimit; // can show max 10 city upgrades
 var initialCityCalc = true;
 
-
-function getCitizens() {
-	traversePage('citizens');
-}
-
-function getSessionMoney() {
-	traversePage('stats');
-	var x;
-	try {
-		x = $('body > div.site-wrap > div.ng-scope > div > div > div.card-wrapper > div > div > div > h4:nth-child(3)').text().split('$').slice(1,2);
-	} catch(err) {
-		x = '0';
-	} finally {
-		return convertNumber(x);
-	}
-}
-
-function getIncome() {
-	traversePage('');
-
-	var x, y;
-
-	try {
-		x = $('body > div.site-wrap > div.ng-scope > div > div > div:nth-child(11) > h4.text-center.white.opensans.produceText.ng-binding.ng-scope').text().split('$').slice(1,2)[0].split(' per second').slice(0,1);
-		y = $('#navbar > ul:nth-child(1) > li > strong').text().split('$').slice(1,2);
-	} catch(err) {
-		x = '0';
-		y = '0';
-	} finally {
-		return [convertNumber(x), convertNumber(y)];
-	}
-}
-
 var btnMenu = document.createElement('div');
 btnMenu.setAttribute('class', 'luckiest');
 btnMenu.setAttribute('id', 'btnMenu');
@@ -273,6 +239,10 @@ txtResetNow.setAttribute('id', 'txtResetNow');
 txtResetNow.setAttribute('class', 'smalltext');
 $('#holdTexts').append(txtResetNow);
 $('#txtResetNow').attr('per', '0');
+
+// --------
+// ETA PART
+// --------
 
 var holdETAButtons = document.createElement('div');
 holdETAButtons.setAttribute('class', 'cardbuttons');
@@ -444,7 +414,7 @@ holdETACitizenInfo = document.createElement('span');
 holdETACitizenInfo.setAttribute('id', 'holdETACitizenInfo');
 holdETACitizenInfo.setAttribute('class', 'smalltext');
 $('#wndETACitizen').append(holdETACitizenInfo).after('</br>');
-$(holdETACitizenInfo).html('For # type in scientific notation</br>(e.g. 1.23e+45) or words</br>(e.g. 59.23 Quintillion');
+$(holdETACitizenInfo).html('For # type in scientific notation</br>(e.g. "1.23e+45") or words</br>(e.g. "59.23 Quintillion")');
 // input
 inputETACitizen = document.createElement('input');
 inputETACitizen.setAttribute('id', 'inputETACitizen');
@@ -633,7 +603,7 @@ function showUpgradeETA() {
 			num++;
 		}
 	}
-	if( upgradeLimit ) for( var i = num; i<10; i++ ) $(holdETAUpgTexts[i]).text('');
+	if( !upgradeLimit ) for( var i = num; i<10; i++ ) $(holdETAUpgTexts[i]).text('');
 }
 
 function showCityETA() {
@@ -650,7 +620,7 @@ function showCityETA() {
 			num++;
 		}
 	}
-	if( cityLimit ) for( var i = num; i<10; i++ ) $(holdETACityTexts[i]).text('');
+	if( !cityLimit ) for( var i = num; i<10; i++ ) $(holdETACityTexts[i]).text('');
 }
 
 function updateMainTexts() {
