@@ -1,5 +1,6 @@
 // ETA Script for http://cityinc.se
-// pre-release version
+// https://github.com/zedor/CityInc-ETA/
+// Release version 2
 // Script by selenagomez
 // Game by kvadd
 //
@@ -23,7 +24,7 @@ function convertNumber( input ) {
 		input = input.replace(',','');
 		var str = input.split(' ').slice(1,2);
 		var num = parseFloat(input.split(' ').slice(0,1));
-		
+
 		if( str=='Million' ) num = num * Math.pow(10,6);
 		if( str=='Billion' ) num = num * Math.pow(10,9);
 		if( str=='Trillion' ) num = num * Math.pow(10,12);
@@ -141,17 +142,25 @@ function convertToScientific( input ) {
 	}
 }
 
+var mainScope = angular.element($('body')).scope();
+var buildingNames = ['Roads', 'Houses', 'Offices', 'Buses', 'Schools', 'Taxis', 'Docks', 'Medics', 'Shops', 'Banks'];
+var holdBuildings = mainScope.build;
+var holdGoals = mainScope.goalsMeta;
+var holdUpgrades = mainScope.upgradesMeta;
+var holdCity = mainScope.tilesMeta;
+var citizenETAcost;
+var currentCitizens;
+var resetCitizens;
+var currentIncome;
+var currentMoney;
+var sessionMoney;
+var upgradeLimit; // can show max 10 upgrades
+var cityLimit; // can show max 10 city upgrades
+var initialCityCalc = true;
+
+
 function getCitizens() {
 	traversePage('citizens');
-	try {
-		var grabCitizens1 = $('body > div.site-wrap > div.ng-scope > div > div:nth-child(1) > div:nth-child(6) > div > div > div.content-block > div.cardtext > h4:nth-child(2)').text();
-		var grabCitizens2 = $('body > div.site-wrap > div.ng-scope > div > div:nth-child(1) > div:nth-child(6) > div > div > div.content-block > div.cardtext > h4:nth-child(4)').text();
-		var grabCitizens3 = parseFloat($('p[id="slidertext2"]').slice(1,2).text().split(', ').slice(1,2)[0].split('%').slice(0, 1)[0]);
-
-		return [convertNumber(grabCitizens1), convertNumber(grabCitizens2), grabCitizens3];
-	} catch(err) {
-		return [0, 0, 0];
-	}
 }
 
 function getSessionMoney() {
@@ -234,74 +243,6 @@ $(wndSettings).css({ 'user-select': 'none',
 wndSettings.setAttribute('id', 'wndSettings');
 $(holdLinux).append(wndSettings);
 
-var holdButtons = document.createElement('div');
-holdButtons.setAttribute('class', 'cardbuttons');
-holdButtons.setAttribute('id', 'holdButtons');
-$('#wndSettings').append(holdButtons);
-
-var holdButtons2 = document.createElement('div');
-holdButtons2.setAttribute('class', 'btn-group btn-group-justified');
-holdButtons2.setAttribute('role', 'group');
-holdButtons2.setAttribute('aria-label', '...');
-holdButtons2.setAttribute('id', 'holdButtons2');
-$('#holdButtons').append(holdButtons2);
-
-var btnGrabInfo = document.createElement('button');
-btnGrabInfo.setAttribute('id', 'btnGrabInfo');
-btnGrabInfo.setAttribute('type', 'button');
-btnGrabInfo.setAttribute('class', 'btn btn-default luckiest');
-btnGrabInfo.style.width = '50%';
-btnGrabInfo.style.height = '34px';
-btnGrabInfo.innerHTML = 'Grab Info';
-$('#holdButtons2').append(btnGrabInfo)
-$('#btnGrabInfo').click(function() {
-	timerStop();
-	var currentPage = document.URL.substr(document.URL.indexOf('#')+1);
-	var sessionMoney = getSessionMoney();
-	var grabMoney = getIncome();
-	var grabCitizen = getCitizens();
-	$('#txtIncome').text('Income: $' + convertToScientific(grabMoney[0]));
-	$('#txtMoney').text('Money: $' + convertToScientific(grabMoney[1]));
-	$('#txtSession').text('Session money: $' + convertToScientific(sessionMoney));
-	$('#txtCitizens').text('Current citizens: ' + convertToScientific(grabCitizen[0]));
-	$('#txtResetNow').text('Citizen gain: ' + convertToScientific(grabCitizen[1]));
-	$('#txtResetNow').attr('per', grabCitizen[2]);
-	showCityETA();
-	showUpgradeETA();
-	showGoalsETA();
-	if( $('#inputETACitizen').val() == '' ) {
-		$('#inputETACitizen').val('100');
-		$('#holdETACitizenText').text('Target: ' + convertToScientific(calculateCitizenNum()));
-		calculateCitizenETA(parseFloat($('#holdETACitizenText').attr('etaValue')));
-	} else if( $('#inputETACitizen').val() == '100' &&  $('#holdETACitizenText').text() == 'Target: 0' ) {
-		$('#holdETACitizenText').text('Target: ' + convertToScientific(calculateCitizenNum()));
-		calculateCitizenETA(parseFloat($('#holdETACitizenText').attr('etaValue')));
-	} else calculateCitizenETA(parseFloat($('#holdETACitizenText').attr('etaValue')));
-	timerStart();
-	traversePage(currentPage);
-	$("#btnGrabInfo").blur();
-});
-
-var btnTest = document.createElement('button');
-btnTest.setAttribute('id', 'btnTest');
-btnTest.setAttribute('type', 'button');
-btnTest.setAttribute('class', 'btn btn-default luckiest');
-btnTest.style.width = '50%';
-btnTest.style.height = '34px';
-$('#holdButtons2').append(btnTest);
-$('#btnTest').text('Test');
-$('#btnTest').attr('pressed', 'false');
-$('#btnTest').click(function() {
-	if( $('#btnTest').attr('pressed') == 'false' ) {
-		$('#btnTest').css('background-color', '#48a04c');
-		$('#btnTest').attr('pressed', 'true');
-	} else {
-		$('#btnTest').css('background-color', '');
-		$('#btnTest').attr('pressed', 'false');
-	}
-	$("#btnTest").blur(); 
-});
-
 // text
 var holdTexts = document.createElement('div');
 holdTexts.setAttribute('id', 'holdTexts');
@@ -332,10 +273,6 @@ txtResetNow.setAttribute('id', 'txtResetNow');
 txtResetNow.setAttribute('class', 'smalltext');
 $('#holdTexts').append(txtResetNow);
 $('#txtResetNow').attr('per', '0');
-
-// --------
-// ETA PART
-// --------
 
 var holdETAButtons = document.createElement('div');
 holdETAButtons.setAttribute('class', 'cardbuttons');
@@ -507,13 +444,12 @@ holdETACitizenInfo = document.createElement('span');
 holdETACitizenInfo.setAttribute('id', 'holdETACitizenInfo');
 holdETACitizenInfo.setAttribute('class', 'smalltext');
 $('#wndETACitizen').append(holdETACitizenInfo).after('</br>');
-$(holdETACitizenInfo).html('For # type in scientific notation</br>(e.g. 1.23e+45)');
+$(holdETACitizenInfo).html('For # type in scientific notation</br>(e.g. 1.23e+45) or words</br>(e.g. 59.23 Quintillion');
 // input
 inputETACitizen = document.createElement('input');
 inputETACitizen.setAttribute('id', 'inputETACitizen');
 inputETACitizen.setAttribute('type', 'text');
 inputETACitizen.setAttribute('class', 'smalltext');
-//$('#holdETAInput').append(inputETACitizen);
 $(inputETACitizen).css({ 'width': '60%',
 	'margin-right': '5px',
 	'margin-top': '10px'});
@@ -534,8 +470,7 @@ $(btnETACitizenNum).text('%');
 $('#holdETACitizenButtons').append(btnETACitizenNum);
 $('#btnETACitizenNum').click(function() {
 	$('#holdETACitizenText').text('Target: ' + calculateCitizenPer() + '%');
-	//$('#holdETACitizenETA').text($('#holdETACitizenText').attr('etaValue'));
-	calculateCitizenETA(parseFloat($('#holdETACitizenText').attr('etaValue')));
+	calculateCitizenETA(citizenETAcost);
 });
 var btnETACitizenPer = document.createElement('button');
 btnETACitizenPer.setAttribute('id', 'btnETACitizenPer');
@@ -548,8 +483,7 @@ $(btnETACitizenPer).text('123');
 $('#holdETACitizenButtons').append(btnETACitizenPer);
 $('#btnETACitizenPer').click(function() {
 	$('#holdETACitizenText').text('Target: ' + convertToScientific(calculateCitizenNum()));
-	//$('#holdETACitizenETA').text($('#holdETACitizenText').attr('etaValue'));
-	calculateCitizenETA(parseFloat($('#holdETACitizenText').attr('etaValue')));
+	calculateCitizenETA(citizenETAcost);
 });
 // text
 var holdETACitizenText = document.createElement('span');
@@ -563,8 +497,8 @@ holdETACitizenETA.setAttribute('class', 'smalltext');
 $('#wndETACitizen').append(holdETACitizenETA);
 
 function calculateETA( target ) {
-	var x = parseFloat($('#txtMoney').text().split('$').slice(1,2));
-	var y = parseFloat($('#txtIncome').text().split('$').slice(1,2));
+	var x = currentMoney;
+	var y = currentIncome;
 
 	if( target <= x ) return 'Ready!';
 	var eta = (target-x)/y;
@@ -585,67 +519,60 @@ function calculateETA( target ) {
 	return buff;
 }
 
-function updateETA( obj, l ) {
-	var buff = 0;
-	for( var i = 0; i<l; i++ ) {
-		buff = parseFloat($(obj[i]).attr('etaValue'));
-		if( buff > 0 )	{
-			$(obj[i]).attr('etaValue', buff - parseFloat($('#txtIncome').text().split('$').slice(1,2)) );
-			$(obj[i]).find('span').remove();
-			$(obj[i]).append('<span>'+calculateETA(parseFloat($(obj[i]).attr('etaValue')))+'</span>');
-		}
+function refreshETA () {
+	currentIncome = mainScope.totalMoneyPerSecond();
+	currentMoney = mainScope.curMoney;
+	sessionMoney = mainScope.sessionMoney;
+	currentCitizens = mainScope.curCitizens;
+	resetCitizens = mainScope.availableCitizens;
+	updateMainTexts();
+	showGoalsETA();
+	showUpgradeETA();
+	showCityETA();
+
+	if( initialCityCalc ) {
+		$('#inputETACitizen').val('100');
+		$('#btnETACitizenPer').click();
+		initialCityCalc = false;
 	}
+
+	calculateCitizenETA(citizenETAcost);
 }
 
-function refreshETA () {
-	updateETA( holdETATexts, 10 );
-	updateETA( holdETAUpgTexts, $('#wndETAUpgrade').attr('num') );
-	updateETA( holdETACityTexts, $('#wndETACity').attr('num') );
+function calculateDenizens( cost ) {
+	return Math.floor((150*Math.sqrt(cost/1e+15) * ((mainScope.politicsIdeology.value * -1) + 1)) * mainScope.citizenExtraHelp.extraCitizenGainRate);
+}
 
-	var y = parseFloat($('#txtIncome').text().split('$').slice(1,2));
-	var x = parseFloat($('#holdETACitizenText').attr('sessionValue'));
-	$('#holdETACitizenText').attr('sessionValue', x+y);
-	calculateCitizenETA(parseFloat($('#holdETACitizenText').attr('etaValue')), x+y);
+function calculateCitizenCost( c ) {
+	var h = mainScope.citizenExtraHelp.extraCitizenGainRate;
+	var y = mainScope.politicsIdeology.value;
+	return (3456971699377777672192*Math.pow(c,2)) / (Math.pow(h,2)*(77781863236*Math.pow(y,2)-155563726472*y+77781863236));
 }
 
 function calculateCitizenPer() {
-	var cur = parseFloat($('#txtCitizens').text().split(': ').slice(1,2));
-	var target = parseFloat($('#inputETACitizen').val()); // value from input in NUM
-	var per = parseFloat($('#txtResetNow').attr('per')); // citizen gain percent
-	per = (100+per) / 100;
-
-	$('#holdETACitizenText').attr('etaValue', Math.floor( Math.pow(target/per,2) * Math.pow(10,15) / Math.pow(150, 2) ) );
-
+	var cur = currentCitizens;
+	var target = convertNumber($('#inputETACitizen').val()); // value from input in NUM
+	citizenETAcost = calculateCitizenCost(target);
 	return Math.round(target/cur*100);
 }
 
 function calculateCitizenNum() {
-	var cur = parseFloat($('#txtCitizens').text().split(': ').slice(1,2));
+	var cur = currentCitizens;
 	var target = parseFloat($('#inputETACitizen').val()); // value from input in %
-	var per = parseFloat($('#txtResetNow').attr('per')); // citizen gain percent
-	per = (100+per) / 100;
-
-	$('#holdETACitizenText').attr('etaValue', Math.floor( Math.pow(cur*target/100/per,2) * Math.pow(10,15) / Math.pow(150, 2) ) );
-
+	citizenETAcost = calculateCitizenCost(cur*target/100);
 	return Math.round(cur*target/100);
 }
 
-function calculateCitizenETA( target, progress ) {
-	var x = parseFloat($('#txtSession').text().split('$').slice(1,2));
-	var y = parseFloat($('#txtIncome').text().split('$').slice(1,2));
+function calculateCitizenETA( target ) {
+	var x = sessionMoney;
+	var y = currentIncome;
 
-	if (typeof progress === 'undefined') {
-		progress = x;
-	}
-
-	$('#holdETACitizenText').attr('sessionValue', progress);
-
-	if( target-progress <= 0 ) {
+	if( target-x <= 0 ) {
 		$('#holdETACitizenETA').text('ETA: Ready!');
 		return;
 	}
 
-	var eta = (target-progress)/y;
+	var eta = (target-x)/y;
 
 	var z = Math.floor(eta/31536000);
 	if( z > 0 ) {
@@ -676,60 +603,62 @@ function timerStart() {
 }
 
 function timerStop() {
-	clearInterval(timerID)
-	timerID = null
+	clearInterval(timerID);
+	timerID = null;
 }
 
 
 function showGoalsETA() {
-	traversePage('');
-	var buff = '';
-	try {
-		for( var i = 0; i<10; i++ ) {
-			buff = $('body > div.site-wrap > div.ng-scope > div > div > div:nth-child('+(i+1)+') > div > div > div.content-block > div.cardtext > span > span.smalltext.ng-binding.ng-scope > span > strong').text();
-			if( buff == '' ) buff = $('body > div.site-wrap > div.ng-scope > div > div > div:nth-child(3) > div > div > div.content-block > div.cardtext > span > span.smalltext.goaltooltips.ng-binding.ng-scope > strong').text();
-			$(holdETATexts[i]).text(buff+' '+holdETAGoals[i]+': ');
-			if( $('body > div.site-wrap > div.ng-scope > div > div > div:nth-child('+(i+1)+') > div > div > div.content-block > div.cardtext > span > span.smalltext.ng-binding.ng-scope > span > span').text() != '' )
-				buff = $('body > div.site-wrap > div.ng-scope > div > div > div:nth-child('+(i+1)+') > div > div > div.content-block > div.cardtext > span > span.smalltext.ng-binding.ng-scope > span > span').text().split('$').slice(1,2)[0].split('\n');
-			else buff = $('body > div.site-wrap > div.ng-scope > div > div > div:nth-child('+(i+1)+') > div > div > div.content-block > div.cardtext > span > span.smalltext.goaltooltips.ng-binding.ng-scope > span').text().split('$').slice(1,2)[0].split('\n');
-			$(holdETATexts[i]).attr('etaValue', convertNumber(buff));
-			$(holdETATexts[i]).append('<span>'+calculateETA(convertNumber(buff))+'</span>');
-		}
-	} catch(e) {}
+	for( var i = 0; i<10; i++ ){
+		$(holdETATexts[i]).text(holdGoals[holdBuildings[i].nextGoal].goal+' '+buildingNames[i]+': '+calculateETA(mainScope.calculateBuildingCost(holdBuildings[i],i,holdGoals[holdBuildings[i].nextGoal].goal-holdBuildings[i].num)));
+	}
+}
+
+function shortenName( str ) {
+	if( str.length>12 ) str = str.slice(0,10)+'..';
+	return str;
 }
 
 function showUpgradeETA() {
-	traversePage('upgrade');
-	var buff = '';
+	var num = 0;
+	upgradeLimit = false;
 	$('br', '#wndETAUpgrade').remove();
-	$('span', '#wndETAUpgrade').empty();
-	for( var i = 0; i<10; i++ ) {
-		$('#wndETAUpgrade').attr('num', i);
-		buff = $('body > div.site-wrap > div.ng-scope > div > div:nth-child('+(i+2)+') > div > div > div.content-block > div.cardtext.ng-binding > h3').text();
-		if( buff == '' ) break; else if ( buff.length > 10 ) buff = buff.slice(0,10) + '..';
-		buff += ': ';
-		$(holdETAUpgTexts[i]).text(buff);
-		buff = $('body > div.site-wrap > div.ng-scope > div > div:nth-child('+(i+2)+') > div > div > div.content-block > div.cardtext.ng-binding > h4').text().split('$').slice(1,2);
-		$(holdETAUpgTexts[i]).attr('etaValue', convertNumber(buff));
-		$(holdETAUpgTexts[i]).append('<span>'+calculateETA(convertNumber(buff))+'</span>').after('</br>');
-		$('#wndETAUpgrade').attr('num', i+1);
+	for (const value of holdUpgrades) {
+		if( num == 10 ) {
+			break;
+			upgradeLimit = true;
+		}
+		if( !mainScope.isInArray(mainScope.upgrades, value.id) ){
+			$(holdETAUpgTexts[num]).text( shortenName(value.name) + ': ' + calculateETA(value.cost) ).after('</br>');
+			num++;
+		}
 	}
+	if( upgradeLimit ) for( var i = num; i<10; i++ ) $(holdETAUpgTexts[i]).text('');
 }
 
 function showCityETA() {
-	traversePage('city');
-	var buff = '';
+	var num = 0;
+	cityLimit = false;
 	$('br', '#wndETACity').remove();
-	$('span', '#wndETACity').empty();
-	for( var i = 0; i<10; i++ ) {
-		$('#wndETACity').attr('num', i);
-		buff = $('body > div.site-wrap > div.ng-scope > div > div > div > div:nth-child(18) > div:nth-child(' + (i+2) + ') > div > div > div.content-block > div.cardtext.ng-binding > h2').text();
-		if( buff == '' ) break; else if ( buff.length > 10 ) buff = buff.slice(0,10) + '..';
-		buff += ': ';
-		$(holdETACityTexts[i]).text(buff);
-		buff = $('body > div.site-wrap > div.ng-scope > div > div > div > div:nth-child(18) > div:nth-child(' + (i+2) + ') > div > div > div.content-block > div.cardtext.ng-binding > h4').text().split('$').slice(1,2);
-		$(holdETACityTexts[i]).attr('etaValue', convertNumber(buff));
-		$(holdETACityTexts[i]).append('<span>'+calculateETA(convertNumber(buff))+'</span>').after('</br>');
-		$('#wndETACity').attr('num', i+1);
+	for (const value of holdCity) {
+		if( num == 10 ) {
+			break;
+			cityLimit = true;
+		}
+		if( !mainScope.isInArray(mainScope.tiles, value.id) ){
+			$(holdETACityTexts[num]).text( shortenName(value.name) + ': ' + calculateETA(value.cost) ).after('</br>');
+			num++;
+		}
 	}
+	if( cityLimit ) for( var i = num; i<10; i++ ) $(holdETACityTexts[i]).text('');
 }
+
+function updateMainTexts() {
+	$('#txtIncome').text('Income: $' + convertToScientific(currentIncome));
+	$('#txtMoney').text('Money: $' + convertToScientific(currentMoney));
+	$('#txtSession').text('Session money: $' + convertToScientific(sessionMoney));
+	$('#txtCitizens').text('Current citizens: ' + convertToScientific(currentCitizens));
+	$('#txtResetNow').text('Citizen gain: '+ convertToScientific(resetCitizens));
+}
+
+timerStart();
