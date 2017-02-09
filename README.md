@@ -28,3 +28,17 @@ ETA calculator/display for CityInc.se idle incremental game
 ##### What it doesn't do
 * Doesn't play the game for you
 * Doesn't take cycles into account - values will be way off for long bank cycles!!
+
+##### Known Issues
+* Sometimes the upgrade/city list doesn't follow proper ordering.
+  * This is due to how the lists are ordered in the game itself, which is not always by cost.
+  * One solution would be to prepare the list and sort it by cost before adding it to the window, rather than iterating through the main list and adding the items one by one in succession.
+  * I will be fixing this in the next update.
+* Goal list member derps after completing all goals of a building.
+  * This is due to me forgetting to add a check for that case.
+  * I will be fixing this in the next update.
+* ETA is way off!
+  * This is most probably due to the cycle mechanic of the buildings and how the ETA is calculated.
+  * If your building on a long cycle holds the majority of the income per second, even if the cycle has a few seconds left to completion, the ETA is not taking that into account.
+  * ETA calculation is a simple formula: (targetCost - currentMoney)/income
+  * I most probably won't be changing this as your bank cycle diminishes to 9s after ~10 or less resets.
