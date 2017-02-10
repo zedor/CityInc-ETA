@@ -2,7 +2,8 @@
 
 ETA calculator/display for CityInc.se idle incremental game
 
-[Preview](http://i.imgur.com/a7KcmhS.png)
+* [Goals](http://i.imgur.com/plTCHUI.png) | [Upgrades](http://i.imgur.com/GKK9fpN.png) | [City Upgrades](http://i.imgur.com/3HUIf8B.png) | [Citizens](http://i.imgur.com/dDwi3gf.png)
+* [Button location](http://i.imgur.com/jW9434j.png).
 
 ##### Usage
 
