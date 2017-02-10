@@ -1,5 +1,6 @@
 // ETA Script for http://cityinc.se
-// pre-release version
+// https://github.com/zedor/CityInc-ETA/
+// Release version 3
 // Script by selenagomez
 // Game by kvadd
 //
@@ -12,10 +13,6 @@
 //      For Internet Explorer press f12 then press ctrl+2 to open the console.
 //	3. Paste in the entire contents of this script and press enter to
 //	activate it. Press ctrl+enter if you are using Internet Explorer.
-
-function traversePage( tab ) {
-	window.location.hash = '#'+tab;
-}
 
 function convertNumber( input ) {
 	try {
@@ -134,7 +131,6 @@ function convertNumber( input ) {
 
 function convertToScientific( input ) {
 	try {
-		if( input < 100000 ) return input;
 		return input.toExponential(2);
 	} catch(err) {
 		return 0;
@@ -240,10 +236,6 @@ txtResetNow.setAttribute('class', 'smalltext');
 $('#holdTexts').append(txtResetNow);
 $('#txtResetNow').attr('per', '0');
 
-// --------
-// ETA PART
-// --------
-
 var holdETAButtons = document.createElement('div');
 holdETAButtons.setAttribute('class', 'cardbuttons');
 holdETAButtons.setAttribute('id', 'holdETAButtons');
@@ -338,14 +330,13 @@ $(wndETAGoal).css({ 'user-select': 'none',
 $(holdLinux).append(wndETAGoal);
 
 // texts
-var holdETAGoals = ['Roads', 'Houses', 'Offices', 'Buses', 'Schools', 'Taxis', 'Docks', 'Medics', 'Shops', 'Banks'];
 var holdETATexts = [];
 
 for( var i = 0; i<10; i++ ) {
 	holdETATexts[i] = document.createElement('span');
 	holdETATexts[i].setAttribute('id', 'holdETATexts'+i);
 	holdETATexts[i].setAttribute('class', 'smalltext');
-	$(holdETATexts[i]).text(holdETAGoals[i]+':');
+	$(holdETATexts[i]).text(buildingNames[i]+':');
 	$('#wndETAGoal').append(holdETATexts[i]).append('</br>');
 }
 
@@ -414,7 +405,7 @@ holdETACitizenInfo = document.createElement('span');
 holdETACitizenInfo.setAttribute('id', 'holdETACitizenInfo');
 holdETACitizenInfo.setAttribute('class', 'smalltext');
 $('#wndETACitizen').append(holdETACitizenInfo).after('</br>');
-$(holdETACitizenInfo).html('For # type in scientific notation</br>(e.g. "1.23e+45") or words</br>(e.g. "59.23 Quintillion")');
+$(holdETACitizenInfo).html('For # type in scientific notation</br>(e.g. 1.23e+45) or words</br>(e.g. 59.23 Quintillion');
 // input
 inputETACitizen = document.createElement('input');
 inputETACitizen.setAttribute('id', 'inputETACitizen');
@@ -580,7 +571,8 @@ function timerStop() {
 
 function showGoalsETA() {
 	for( var i = 0; i<10; i++ ){
-		$(holdETATexts[i]).text(holdGoals[holdBuildings[i].nextGoal].goal+' '+buildingNames[i]+': '+calculateETA(mainScope.calculateBuildingCost(holdBuildings[i],i,holdGoals[holdBuildings[i].nextGoal].goal-holdBuildings[i].num)));
+		if( holdBuildings[i].nextGoal == -1 ) $(holdETATexts[i]).text(buildingNames[i]+' completed!');
+		else $(holdETATexts[i]).text(holdGoals[holdBuildings[i].nextGoal].goal+' '+buildingNames[i]+': '+calculateETA(mainScope.calculateBuildingCost(holdBuildings[i],i,holdGoals[holdBuildings[i].nextGoal].goal-holdBuildings[i].num)));
 	}
 }
 
@@ -592,6 +584,7 @@ function shortenName( str ) {
 function showUpgradeETA() {
 	var num = 0;
 	upgradeLimit = false;
+	var tempArray = [];
 	$('br', '#wndETAUpgrade').remove();
 	for (const value of holdUpgrades) {
 		if( num == 10 ) {
@@ -599,16 +592,19 @@ function showUpgradeETA() {
 			upgradeLimit = true;
 		}
 		if( !mainScope.isInArray(mainScope.upgrades, value.id) ){
-			$(holdETAUpgTexts[num]).text( shortenName(value.name) + ': ' + calculateETA(value.cost) ).after('</br>');
+			tempArray[num] = value;
 			num++;
 		}
 	}
-	if( !upgradeLimit ) for( var i = num; i<10; i++ ) $(holdETAUpgTexts[i]).text('');
+	tempArray = tempArray.sort(function(a, b){return a.cost-b.cost});
+	for(var i = 0; i<10; i++ ) $(holdETAUpgTexts[i]).text( shortenName(tempArray[i].name) + ': ' + calculateETA(tempArray[i].cost) ).after('</br>');
+	if( upgradeLimit ) for( var i = num; i<10; i++ ) $(holdETAUpgTexts[i]).text('');
 }
 
 function showCityETA() {
 	var num = 0;
 	cityLimit = false;
+	var tempArray = [];
 	$('br', '#wndETACity').remove();
 	for (const value of holdCity) {
 		if( num == 10 ) {
@@ -616,11 +612,13 @@ function showCityETA() {
 			cityLimit = true;
 		}
 		if( !mainScope.isInArray(mainScope.tiles, value.id) ){
-			$(holdETACityTexts[num]).text( shortenName(value.name) + ': ' + calculateETA(value.cost) ).after('</br>');
+			tempArray[num] = value;
 			num++;
 		}
 	}
-	if( !cityLimit ) for( var i = num; i<10; i++ ) $(holdETACityTexts[i]).text('');
+	tempArray = tempArray.sort(function(a, b){return a.cost-b.cost});
+	for(var i = 0; i<10; i++ ) $(holdETACityTexts[i]).text( shortenName(tempArray[i].name) + ': ' + calculateETA(tempArray[i].cost) ).after('</br>');
+	if( cityLimit ) for( var i = num; i<10; i++ ) $(holdETACityTexts[i]).text('');
 }
 
 function updateMainTexts() {
