@@ -138,7 +138,7 @@ function convertToScientific( input ) {
 }
 
 var mainScope = angular.element($('body')).scope();
-var buildingNames = ['Roads', 'Houses', 'Offices', 'Buses', 'Schools', 'Taxis', 'Docks', 'Medics', 'Shops', 'Banks'];
+var buildingNames = ['Roads', 'Houses', 'Offices', 'Buses', 'Schools', 'Taxis', 'Docks', 'Medics', 'Shops', 'Banks', 'Each'];
 var holdBuildings = mainScope.build;
 var holdGoals = mainScope.goalsMeta;
 var holdUpgrades = mainScope.upgradesMeta;
@@ -332,7 +332,7 @@ $(holdLinux).append(wndETAGoal);
 // texts
 var holdETATexts = [];
 
-for( var i = 0; i<10; i++ ) {
+for( var i = 0; i<11; i++ ) {
 	holdETATexts[i] = document.createElement('span');
 	holdETATexts[i].setAttribute('id', 'holdETATexts'+i);
 	holdETATexts[i].setAttribute('class', 'smalltext');
@@ -405,7 +405,7 @@ holdETACitizenInfo = document.createElement('span');
 holdETACitizenInfo.setAttribute('id', 'holdETACitizenInfo');
 holdETACitizenInfo.setAttribute('class', 'smalltext');
 $('#wndETACitizen').append(holdETACitizenInfo).after('</br>');
-$(holdETACitizenInfo).html('For # type in scientific notation</br>(e.g. 1.23e+45) or words</br>(e.g. 59.23 Quintillion');
+$(holdETACitizenInfo).html('For # type in scientific notation</br>(e.g. "1.23e+45") or words</br>(e.g. "43.21 Quintillion")');
 // input
 inputETACitizen = document.createElement('input');
 inputETACitizen.setAttribute('id', 'inputETACitizen');
@@ -569,11 +569,24 @@ function timerStop() {
 }
 
 
+function calculateEachGoal( target ) {
+	var cost = 0;
+	for( var i = 0; i<10; i++ ){
+		if( target-holdBuildings[i].num>0 )
+		cost += mainScope.calculateBuildingCost(holdBuildings[i],i,target-holdBuildings[i].num);
+
+	}
+	return cost;
+}
+
 function showGoalsETA() {
 	for( var i = 0; i<10; i++ ){
 		if( holdBuildings[i].nextGoal == -1 ) $(holdETATexts[i]).text(buildingNames[i]+' completed!');
 		else $(holdETATexts[i]).text(holdGoals[holdBuildings[i].nextGoal].goal+' '+buildingNames[i]+': '+calculateETA(mainScope.calculateBuildingCost(holdBuildings[i],i,holdGoals[holdBuildings[i].nextGoal].goal-holdBuildings[i].num)));
 	}
+	var buff = mainScope.settings.goalsAll;
+	if( buff!=-1 ) $(holdETATexts[10]).text(holdGoals[buff].goal+' '+buildingNames[10]+': '+calculateETA(calculateEachGoal(holdGoals[buff].goal)));
+	else $(holdETATexts[10]).text('"All buildings" completed!');
 }
 
 function shortenName( str ) {
