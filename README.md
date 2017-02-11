@@ -14,7 +14,7 @@ ETA calculator/display for CityInc.se idle incremental game
   * For Internet Explorer press f12 then press ctrl+2 to open the console.
 * Paste in the entire contents of this script and press enter to activate it.
   * Press ctrl+enter if you are using Internet Explorer.
-* Alternatively, check out the [hastebin](https://hastebin.com/veqekorafi.pl) of the bookmarklet version
+* Alternatively, check out the [hastebin](https://hastebin.com/ulemafusab.pl) of the bookmarklet version
   * This was done with the [bookmarklet converter](http://mrcoles.com/bookmarklet/).
   * I make no guarantees that it will work 100% but so far testing has shown nothing wrong.
 * Look at the ETA's
