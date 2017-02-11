@@ -1,6 +1,6 @@
 // ETA Script for http://cityinc.se
 // https://github.com/zedor/CityInc-ETA/
-// Release version 3
+// Release version 4
 // Script by selenagomez
 // Game by kvadd
 //
@@ -255,7 +255,7 @@ btnToggleETA.setAttribute('class', 'btn btn-default luckiest');
 btnToggleETA.style.width = '50%';
 btnToggleETA.style.height = '34px';
 btnToggleETA.innerHTML = 'ETA';
-$('#holdETAButtons2').append(btnToggleETA)
+$('#holdETAButtons2').append(btnToggleETA);
 $('#btnToggleETA').attr('pressed', 'false');
 $('#btnToggleETA').text('ETA');
 $('#btnToggleETA').click(function() {
@@ -426,7 +426,7 @@ btnETACitizenNum.setAttribute('type', 'button');
 btnETACitizenNum.setAttribute('class', 'btn btn-default luckiest');
 $(btnETACitizenNum).css({ 'width': '18%',
 	'height': '34px',
-	'padding': '6px 3px 6px 3px' })
+	'padding': '6px 3px 6px 3px' });
 $(btnETACitizenNum).text('%');
 $('#holdETACitizenButtons').append(btnETACitizenNum);
 $('#btnETACitizenNum').click(function() {
@@ -439,7 +439,7 @@ btnETACitizenPer.setAttribute('type', 'button');
 btnETACitizenPer.setAttribute('class', 'btn btn-default luckiest');
 $(btnETACitizenPer).css({ 'width': '18%',
 	'height': '34px',
-	'padding': '6px 3px 6px 3px' })
+	'padding': '6px 3px 6px 3px' });
 $(btnETACitizenPer).text('123');
 $('#holdETACitizenButtons').append(btnETACitizenPer);
 $('#btnETACitizenPer').click(function() {
@@ -582,11 +582,13 @@ function calculateEachGoal( target ) {
 function showGoalsETA() {
 	for( var i = 0; i<10; i++ ){
 		if( holdBuildings[i].nextGoal == -1 ) $(holdETATexts[i]).text(buildingNames[i]+' completed!');
+		else if( holdBuildings[i].nextGoal === undefined ) $(holdETATexts[i]).text(buildingNames[i]+' derped! Undefined.');
 		else $(holdETATexts[i]).text(holdGoals[holdBuildings[i].nextGoal].goal+' '+buildingNames[i]+': '+calculateETA(mainScope.calculateBuildingCost(holdBuildings[i],i,holdGoals[holdBuildings[i].nextGoal].goal-holdBuildings[i].num)));
 	}
 	var buff = mainScope.settings.goalsAll;
-	if( buff!=-1 ) $(holdETATexts[10]).text(holdGoals[buff].goal+' '+buildingNames[10]+': '+calculateETA(calculateEachGoal(holdGoals[buff].goal)));
-	else $(holdETATexts[10]).text('"All buildings" completed!');
+	if( buff==-1 ) $(holdETATexts[10]).text('"All buildings" completed!');
+	else if ( buff === undefined ) $(holdETATexts[10]).text('"All buildings" derped! Undefined.');
+	else $(holdETATexts[10]).text(holdGoals[buff].goal+' '+buildingNames[10]+': '+calculateETA(calculateEachGoal(holdGoals[buff].goal)));
 }
 
 function shortenName( str ) {
