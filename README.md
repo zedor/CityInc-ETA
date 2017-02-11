@@ -17,7 +17,6 @@ ETA calculator/display for CityInc.se idle incremental game
 * Alternatively, check out the [hastebin](https://hastebin.com/veqekorafi.pl) of the bookmarklet version
   * This was done with the [bookmarklet converter](http://mrcoles.com/bookmarklet/).
   * I make no guarantees that it will work 100% but so far testing has shown nothing wrong.
-  
 * Look at the ETA's
 * For citizen gain ETA you have two options
   * Enter number of wanted citizens and press [%] button to show the ETA and the % of current citizens the number equates to
